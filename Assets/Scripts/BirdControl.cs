@@ -5,45 +5,83 @@ using UnityEngine;
 public class BirdControl : MonoBehaviour
 {
     private Rigidbody2D rb;
-    private Vector2 force = new Vector2 (0, 6f);
+    private Vector2 force = new Vector2 (0, 5f);
     private SpriteRenderer sRenderer;
+    private float gravityScale = 1f;
     [SerializeField] private Sprite spriteAlive, spriteDead;
-
-    private enum PlayerState {ALIVE, DEAD};
-    private PlayerState playerState;
+    private int numberOfTotalTouches;
+    private int rayLength = 6, pipesPassedCount;
+    private int instanceID = 0;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         sRenderer = GetComponent<SpriteRenderer>();
     }
-    // Start is called before the first frame update
+
     void Start()
     {
-        playerState = PlayerState.ALIVE;
-        rb.gravityScale = .8f;
+        rb.gravityScale = 0f;
+        sRenderer.sprite = spriteAlive;
+        Input.multiTouchEnabled = false;
     }
 
-    // Update is called once per frame
     void Update()
     {
-        if(playerState == PlayerState.DEAD) {
-            sRenderer.sprite = spriteDead;
-            return; 
+        if(Input.touchCount == 1)
+        {
+            numberOfTotalTouches++;
         }
 
-        if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
+        // This means the player has touched the screen and the game has started.
+        if (numberOfTotalTouches == 1)
         {
-            rb.velocity = force;
+            GameManager.Instance.gameState = GameManager.GameState.STARTED;
+            //GameManager.Instance.InvokeRepeating("IncreaseScore", 0f, 0.5f);
+        }
+
+        if(GameManager.Instance.gameState == GameManager.GameState.STARTED){
+            rb.gravityScale = gravityScale;
+            
+            if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
+            {
+                rb.velocity = force;
+            }
+            CountPassedPipes();
         }
 
         if (transform.position.y > 5 || transform.position.y < -5) {
-            playerState = PlayerState.DEAD;
+            GameManager.Instance.gameState = GameManager.GameState.PAUSED;
+            sRenderer.sprite = spriteDead;
+        }
+
+        if(GameManager.Instance.gameState == GameManager.GameState.PAUSED) { GameManager.Instance.CancelInvoke("IncreaseScore"); }
+    
+        //CountPassedPipes();
+    }
+
+    private void CountPassedPipes()
+    {
+        if(Physics2D.Raycast(transform.position, Vector2.up, rayLength).collider != null)
+        {
+
+            if(instanceID == Physics2D.Raycast(transform.position, Vector2.up, rayLength).collider.gameObject.GetInstanceID())
+            {
+                return;
+            }
+            else
+            {
+                instanceID = Physics2D.Raycast(transform.position, Vector2.up, rayLength).collider.gameObject.GetInstanceID();
+                pipesPassedCount++;
+                GameManager.Instance.score = pipesPassedCount;
+                Debug.Log(pipesPassedCount);
+            } 
         }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        playerState = PlayerState.DEAD;
+        GameManager.Instance.gameState = GameManager.GameState.PAUSED;
+        sRenderer.sprite = spriteDead;
     }
 }
