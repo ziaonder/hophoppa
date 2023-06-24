@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class BirdControl : MonoBehaviour
@@ -37,7 +36,6 @@ public class BirdControl : MonoBehaviour
         if (numberOfTotalTouches == 1)
         {
             GameManager.Instance.gameState = GameManager.GameState.STARTED;
-            //GameManager.Instance.InvokeRepeating("IncreaseScore", 0f, 0.5f);
         }
 
         if(GameManager.Instance.gameState == GameManager.GameState.STARTED){
@@ -51,13 +49,10 @@ public class BirdControl : MonoBehaviour
         }
 
         if (transform.position.y > 5 || transform.position.y < -5) {
-            GameManager.Instance.gameState = GameManager.GameState.PAUSED;
-            sRenderer.sprite = spriteDead;
+            StartCoroutine(SetDeathArrangements());
         }
 
-        if(GameManager.Instance.gameState == GameManager.GameState.PAUSED) { GameManager.Instance.CancelInvoke("IncreaseScore"); }
-    
-        //CountPassedPipes();
+        //if(GameManager.Instance.gameState == GameManager.GameState.FINISHED) { GameManager.Instance.CancelInvoke("IncreaseScore"); }
     }
 
     private void CountPassedPipes()
@@ -74,14 +69,21 @@ public class BirdControl : MonoBehaviour
                 instanceID = Physics2D.Raycast(transform.position, Vector2.up, rayLength).collider.gameObject.GetInstanceID();
                 pipesPassedCount++;
                 GameManager.Instance.score = pipesPassedCount;
-                Debug.Log(pipesPassedCount);
             } 
         }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        GameManager.Instance.gameState = GameManager.GameState.PAUSED;
+        StartCoroutine(SetDeathArrangements());
+    }
+
+    private IEnumerator SetDeathArrangements()
+    {
+        GameManager.Instance.gameState = GameManager.GameState.ENDED;
         sRenderer.sprite = spriteDead;
+        yield return new WaitForSeconds(2f);
+        rb.gravityScale = 0f;
+        rb.velocity = Vector3.zero;
     }
 }

@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -8,7 +5,7 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance;
 
     public int score;
-    public enum GameState {STARTED, PAUSED}
+    public enum GameState {SET, STARTED, PAUSED, ENDED}
     public GameState gameState;
 
     // Start is called before the first frame update
@@ -22,11 +19,6 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        gameState = GameState.PAUSED;
+        gameState = GameState.SET;
     }
-
-    //public void IncreaseScore()
-    //{
-    //    score += 50;
-    //}
 }

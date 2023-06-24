@@ -1,6 +1,4 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 
 public class PipeControl : MonoBehaviour
@@ -50,20 +48,20 @@ public class PipeControl : MonoBehaviour
 
     private void Update()
     {
-        if(GameManager.Instance.gameState == GameManager.GameState.PAUSED)
+        if (GameManager.Instance.gameState == GameManager.GameState.STARTED)
+        {
+            foreach (var pipe in pipes)
+            {
+                pipe.GetComponent<Rigidbody2D>().velocity = pipeVelocity;
+            }
+        }
+        else
         {
             foreach (var pipe in pipes)
             {
                 pipe.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
             }
             return;
-        }
-        else
-        {
-            foreach (var pipe in pipes)
-            {
-                pipe.GetComponent<Rigidbody2D>().velocity = pipeVelocity;
-            }
         }
 
         for(int i = 0; i < pipes.Count; i++)
