@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class PipeControl : MonoBehaviour
 {
+    public static PipeControl Instance;
     private float distanceBetweenPipesHorizontally, distanceBetweenPipesVertically = 3.5f, bottomPipeMaxBorder = -1, bottomPipeMinBorder = -4;
     private Vector2 pipeSpawnPoint = new Vector2(5, -1), invertedPipeSpawnPoint = new Vector2(5, 2.5f);
     private Vector2 pipeVelocity = new Vector2(-2f, 0);
@@ -18,6 +19,9 @@ public class PipeControl : MonoBehaviour
 
     private void Awake()
     {
+        if(Instance == null)
+            Instance = this;
+
         cam = Camera.main;
         invertedPipe = pipe;
         spriteRenderer = pipe.GetComponent<SpriteRenderer>();
@@ -48,7 +52,7 @@ public class PipeControl : MonoBehaviour
 
     private void Update()
     {
-        if (GameManager.Instance.gameState == GameManager.GameState.STARTED)
+        if (GameManager.Instance.gameState == GameManager.GameState.RUNNING)
         {
             foreach (var pipe in pipes)
             {
@@ -97,5 +101,16 @@ public class PipeControl : MonoBehaviour
     private float FloatDigitReducer(float value)
     {
         return float.Parse(value.ToString("0.00"));
+    }
+
+    public void RestartGame()
+    {
+        pipes[0].transform.position = pipeSpawnPoint;
+        pipes[1].transform.position = invertedPipeSpawnPoint;
+        pipes[1].transform.rotation = invertedPipe.transform.rotation;
+        pipes[2].transform.position = new Vector2(pipeSpawnPoint.x + distanceBetweenPipesHorizontally, pipeSpawnPoint.y);
+        pipes[3].transform.position = new Vector2(invertedPipeSpawnPoint.x + distanceBetweenPipesHorizontally,
+            invertedPipeSpawnPoint.y);
+        pipes[3].transform.rotation = invertedPipe.transform.rotation;
     }
 }

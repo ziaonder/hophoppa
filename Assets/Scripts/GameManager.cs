@@ -5,7 +5,7 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance;
 
     public int score;
-    public enum GameState {SET, STARTED, PAUSED, ENDED}
+    public enum GameState {SET, RUNNING, PAUSED, ENDED}
     public GameState gameState;
 
     // Start is called before the first frame update
@@ -15,10 +15,5 @@ public class GameManager : MonoBehaviour
         {
             Instance = this;
         }
-    }
-
-    private void Start()
-    {
-        gameState = GameState.SET;
     }
 }
