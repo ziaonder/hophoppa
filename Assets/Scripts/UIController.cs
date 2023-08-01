@@ -4,6 +4,8 @@ using UnityEngine.UI;
 
 public class UIController : MonoBehaviour
 {
+    public AudioSource backgroundSource, soundSource;
+    public AudioClip pauseButtonSound, restartButtonSound, muteButtonSound, quitButtonSound;
     private TextMeshProUGUI tmPro;
     public Button pauseButton, closeButton, soundButton, restartButton, exitButton;
     public GameObject UIObject, soundGameObject, tapToPlayObject, scoreObject, panelObject;
@@ -11,6 +13,7 @@ public class UIController : MonoBehaviour
 
     private void Awake()
     {
+        backgroundSource.volume = 0.5f;
         tmPro = scoreObject.gameObject.GetComponent<TextMeshProUGUI>();
 
         pauseButton.onClick.AddListener(OnPauseButtonClicked);
@@ -50,7 +53,7 @@ public class UIController : MonoBehaviour
 
     private void OnPauseButtonClicked()
     {
-        Debug.Log("clicked");
+        soundSource.PlayOneShot(pauseButtonSound);
         GameManager.Instance.gameState = GameManager.GameState.PAUSED;
         UIObject.SetActive(true);
         closeButton.gameObject.SetActive(true);
@@ -58,6 +61,7 @@ public class UIController : MonoBehaviour
 
     private void OnCloseButtonClicked()
     {
+        soundSource.PlayOneShot(pauseButtonSound);
         GameManager.Instance.gameState = GameManager.GameState.RUNNING;
         UIRaycaster.isPauseButtonHit = false;
         UIObject.SetActive(false);
@@ -65,20 +69,23 @@ public class UIController : MonoBehaviour
 
     private void OnSoundButtonClicked()
     {
-        if(AudioListener.volume != 0f)
+        soundSource.PlayOneShot(muteButtonSound);
+
+        if (backgroundSource.volume != 0f)
         {
-            AudioListener.volume = 0f;
+            backgroundSource.volume = 0f;
             soundGameObject.GetComponent<Image>().sprite = noSoundSprite;
         }
         else
         {
-            AudioListener.volume = 1f;
+            backgroundSource.volume = 0.5f;
             soundGameObject.GetComponent<Image>().sprite = fullSoundSprite;
         } 
     }
 
     private void OnRestartButtonClicked()
     {
+        soundSource.PlayOneShot(restartButtonSound);
         BirdControl.Instance.RestartGame();
         PipeControl.Instance.RestartGame();
         UIRaycaster.isPauseButtonHit = false;
@@ -88,6 +95,7 @@ public class UIController : MonoBehaviour
 
     private void OnQuitButtonClicked()
     {
+        soundSource.PlayOneShot(quitButtonSound);
         Application.Quit();
     }
 }

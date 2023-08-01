@@ -67,7 +67,9 @@ public class BirdControl : MonoBehaviour
             if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
             {
                 if(UIRaycaster.isPauseButtonHit != true)
+                {
                     rb.velocity = force;
+                }
             }
             CountPassedPipes();
         }
@@ -97,6 +99,7 @@ public class BirdControl : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        rb.velocity = Vector2.zero;
         StartCoroutine(SetDeathArrangements());
     }
 
@@ -105,13 +108,19 @@ public class BirdControl : MonoBehaviour
         GameManager.Instance.gameState = GameManager.GameState.ENDED;
         sRenderer.sprite = spriteDead;
         yield return new WaitForSeconds(2f);
-        rb.gravityScale = 0f;
-        rb.velocity = Vector3.zero;
+        
+        // This condition makes sure player's physics are not changed while not in GameState.ENDED situation. Without this there was some stuttering.
+        if(GameManager.Instance.gameState == GameManager.GameState.ENDED)
+        {
+            rb.gravityScale = 0f;
+            rb.velocity = Vector3.zero;
+        }
     }
 
     public void RestartGame()
     {
         transform.position = initialPosition;
+        instanceID = 0;
         pipesPassedCount = 0;
         sRenderer.sprite = spriteAlive;
     }
