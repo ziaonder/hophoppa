@@ -1,11 +1,11 @@
+using System;
 using System.Collections;
-using System.Runtime.CompilerServices;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 public class BirdControl : MonoBehaviour
 {
+    public static event Action OnGameStarted, OnHit;
+    public static event Action<int> OnGameEnd;
     public static BirdControl Instance;
     private Vector3 initialPosition = new Vector3(-0.22f, 0, 0);
     private Rigidbody2D rb;
@@ -59,6 +59,7 @@ public class BirdControl : MonoBehaviour
         if (numberOfTotalTouches == 1)
         {
             GameManager.Instance.gameState = GameManager.GameState.RUNNING;
+            OnGameStarted?.Invoke();
         }
 
         if(GameManager.Instance.gameState == GameManager.GameState.RUNNING){
@@ -75,7 +76,10 @@ public class BirdControl : MonoBehaviour
         }
 
         if (transform.position.y > 5 || transform.position.y < -5) {
-            StartCoroutine(SetDeathArrangements());
+            if(sRenderer.sprite != spriteDead) // if player is not dead
+            {
+                StartCoroutine(SetDeathArrangements());
+            }
         }
     }
 
@@ -83,33 +87,31 @@ public class BirdControl : MonoBehaviour
     {
         if(Physics2D.Raycast(transform.position, Vector2.up, rayLength).collider != null)
         {
-
-            if(instanceID == Physics2D.Raycast(transform.position, Vector2.up, rayLength).collider.gameObject.GetInstanceID())
-            {
-                return;
-            }
-            else
+            if(instanceID != Physics2D.Raycast(transform.position, Vector2.up, rayLength).collider.gameObject.GetInstanceID())
             {
                 instanceID = Physics2D.Raycast(transform.position, Vector2.up, rayLength).collider.gameObject.GetInstanceID();
                 pipesPassedCount++;
                 GameManager.Instance.score = pipesPassedCount;
-            } 
+            }
         }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
         rb.velocity = Vector2.zero;
+        OnHit?.Invoke();
         StartCoroutine(SetDeathArrangements());
     }
 
     private IEnumerator SetDeathArrangements()
     {
         GameManager.Instance.gameState = GameManager.GameState.ENDED;
+        gameObject.GetComponent<CircleCollider2D>().enabled = false;
         sRenderer.sprite = spriteDead;
+        OnGameEnd?.Invoke(pipesPassedCount);
         yield return new WaitForSeconds(2f);
-        
-        // This condition makes sure player's physics are not changed while not in GameState.ENDED situation. Without this there was some stuttering.
+
+        // This condition makes sure player's physics are not changed while not in GameState.ENDED state. Without this there was some stuttering.
         if(GameManager.Instance.gameState == GameManager.GameState.ENDED)
         {
             rb.gravityScale = 0f;
@@ -123,5 +125,6 @@ public class BirdControl : MonoBehaviour
         instanceID = 0;
         pipesPassedCount = 0;
         sRenderer.sprite = spriteAlive;
+        gameObject.GetComponent<CircleCollider2D>().enabled = true;
     }
 }
